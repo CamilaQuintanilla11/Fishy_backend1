@@ -6,7 +6,7 @@ import { Reporte } from './entities/reporte.entity';
 
 const COLUMNS= 'id, titulo, fecha_pub, fecha_update, fecha_aprob, perteneceA, tieneEstado, tieneRiesgo';
 
-const UPDATE = ['titulo', 'tieneRiesgo', 'tieneEstado', 'fecha_aprob'];
+const UPDATE = new Set(['titulo', 'tieneRiesgo', 'tieneEstado', 'fecha_aprob']);
 
 @Injectable()
 export class ReporteRepository {
@@ -52,7 +52,7 @@ export class ReporteRepository {
   }
 
   async update(id: string, changes: Partial<Reporte>): Promise<Reporte | undefined> {
-    const entries = Object.entries(changes).filter(([column, value]) => UPDATE.includes(column) && value !== undefined);
+    const entries = Object.entries(changes).filter(([column, value]) => UPDATE.has(column) && value !== undefined);
     if (entries.length === 0) return this.findById(id);
 
     const sets = entries.map(([column]) => `${column} = ?`).join(', ');
@@ -65,8 +65,7 @@ export class ReporteRepository {
     return this.findById(id);
   }
   async delete(id: string):Promise<boolean> {
-    const [result]=await this.pool.query<ResultSetHeader>
-    (
+    const [result]=await this.pool.query<ResultSetHeader>(
       `DELETE FROM reporte WHERE id = '${id}'`,
     );
     return result.affectedRows>0;

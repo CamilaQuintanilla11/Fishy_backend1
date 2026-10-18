@@ -5,7 +5,7 @@ import { DB_POOL } from '../database/database.module';
 import { Evidencia } from './entities/evidencia.entity';
 
 const COLUMNS = 'id, url, foto, descripcion, fecha_creado, perteneceAReporte';
-const UPDATABLE = ['url', 'foto', 'descripcion'];
+const UPDATABLE = new Set(['url', 'foto', 'descripcion']);
 
 @Injectable()
 export class EvidenciaRepository {
@@ -68,7 +68,7 @@ export class EvidenciaRepository {
 
   async update(id: string, changes: Partial<Evidencia>): Promise<Evidencia | undefined> {
     const entries = Object.entries(changes).filter(
-      ([column, value]) => UPDATABLE.includes(column) && value !== undefined,
+      ([column, value]) => UPDATABLE.has(column) && value !== undefined,
     );
     if (entries.length === 0) return this.findById(id);
     const sets = entries.map(([column]) => `${column} = ?`).join(', ');

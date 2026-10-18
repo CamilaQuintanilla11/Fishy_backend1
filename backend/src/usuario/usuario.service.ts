@@ -5,7 +5,6 @@ import { RolRepository } from '../rol/rol.repository';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { UsuarioResponseDto } from './dto/usuario-response.dto';
-import { ResultSetHeader } from 'node_modules/mysql2/typings/mysql/lib/protocol/packets/ResultSetHeader';
 
 const ROL_DEFAULT = 'usuario';
 @Injectable()

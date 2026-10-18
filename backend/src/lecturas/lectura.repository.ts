@@ -5,7 +5,7 @@ import { DB_POOL } from '../database/database.module';
 import { Lectura, LecturaConProgreso } from './entities/lectura.entity';
 
 const COLUMNS = 'l.id, l.titulo, l.contenido, l.orden, l.modulo';
-const UPDATABLE = ['titulo', 'contenido', 'orden', 'modulo'];
+const UPDATABLE = new Set(['titulo', 'contenido', 'orden', 'modulo']);
 
 @Injectable()
 export class LecturaRepository {
@@ -71,7 +71,7 @@ export class LecturaRepository {
 
   async update(id: string, changes: Partial<Lectura>): Promise<Lectura | undefined> {
     const entries = Object.entries(changes).filter(
-      ([column, value]) => UPDATABLE.includes(column) && value !== undefined,
+      ([column, value]) => UPDATABLE.has(column) && value !== undefined,
     );
     if (entries.length === 0) return this.findById(id);
     const sets = entries.map(([column]) => `${column} = ?`).join(', ');

@@ -7,7 +7,6 @@ import { RegisterDto } from './dto/register.dto';
 import { JwtPayload } from './jwt';
 import { CurrentUser } from './current-user.decorator';
 import { AuthGuard } from './auth.guard';
-import { PerfilResponseDto } from './dto/perfil-response.dto';
 
 @ApiTags('auth')
 @Controller('auth')

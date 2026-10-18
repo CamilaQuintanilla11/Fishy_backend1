@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { ReporteRepository } from './reporte.repository';
 import { ReporteResponseDto } from './dto/reporte-response.dto';
 import { CreateReporteDto } from './dto/create-reporte.dto';
@@ -11,7 +11,6 @@ import { CategoriaRepository } from '../categoria/categoria.repository';
 import { ReporteCategoriaRepository } from './reporte-categoria.repository';
 import { ReporteLikeRepository } from './reporte-like.repository';
 import { UsuarioRepository } from '../usuario/usuario.repository';
-import { Inject, forwardRef } from '@nestjs/common';
 import { unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { EvidenciaRepository } from '../evidencia/evidencia.repository';
@@ -67,7 +66,7 @@ export class ReporteService {
       throw new Error(`No existe el estado "${ESTADO_INICIAL}"`);
     }
     for (const categoriaId of dto.categorias) {
-      const categoria = await this.categoriaRepository.findById(categoriaId);
+      const categoria = await Promise.all(dto.categorias.map((categoriaId) => this.categoriaRepository.findById(categoriaId)));
 
       if (!categoria){
         throw new NotFoundException('la categoría no existe');
@@ -150,30 +149,47 @@ export class ReporteService {
    * @throws ForbiddenException si el reporte no es tuyo.
    * @throws BadRequestException si el reporte ya fue moderado.
    */
-  async update(userID: string, id: string, changes: UpdateReporteDto): Promise<ReporteResponseDto> {
-    await this.obtenerReportePropio(userID, id);
-    if (changes.categorias) {
-      for (const categoriaId of changes.categorias) {
-        const categoria = await this.categoriaRepository.findById(categoriaId);
-        if (!categoria) {
-          throw new NotFoundException(`La categoría no existe`);
-        }
-      }
-      await this.reporteCategoriaRepository.eliminarTodas(id);
-      await this.reporteCategoriaRepository.agregarVarias(id, changes.categorias);
+async update(userID: string, id: string, changes: UpdateReporteDto): Promise<ReporteResponseDto> {
+  await this.obtenerReportePropio(userID, id);
+  if (changes.categorias) {
+    const categorias = await Promise.all(changes.categorias.map((categoriaId) => this.categoriaRepository.findById(categoriaId),
+      ),
+    );
+
+    if (categorias.some((categoria) => !categoria)) {
+      throw new NotFoundException('Una o más categorías no existen');
     }
-    if (changes.titulo) {
-      await this.repository.update(id, { titulo: changes.titulo });
-    }
-    const updated = (await this.repository.findById(id))!;
-    const response = ReporteResponseDto.fromEntity(updated, { incluirDueno: false });
-    if (changes.categorias) {
-      response.categorias = changes.categorias;
-    } else {
-      response.categorias = await this.reporteCategoriaRepository.findCategorias(id);
-    }
-    return response;
+
+    await this.reporteCategoriaRepository.eliminarTodas(id);
+
+    await this.reporteCategoriaRepository.agregarVarias(id, changes.categorias);
   }
+
+  if (changes.titulo !== undefined) {
+    await this.repository.update(id, {
+      titulo: changes.titulo,
+    });
+  }
+
+  const updated = await this.repository.findById(id);
+
+  if (!updated) {
+    throw new NotFoundException('El reporte no existe');
+  }
+
+  const response = ReporteResponseDto.fromEntity(updated, {
+    incluirDueno: false,
+  });
+
+  if (changes.categorias !== undefined) {
+    response.categorias = changes.categorias;
+  } else {
+    response.categorias =
+      await this.reporteCategoriaRepository.findCategorias(id);
+  }
+
+  return response;
+}
 
   /**
    * Borra un reporte propio que siga `pendiente`. Es definitivo: no hay papelera.
@@ -337,16 +353,16 @@ export class ReporteService {
           if (data.categorias.length > 0) {
             return true;
           } else {
-            throw new Error('sin categorias');
+            throw new TypeError('sin categorias');
           }
         } else {
-          throw new Error('categorias no es arreglo');
+          throw new TypeError('categorias no es arreglo');
         }
       } else {
-        throw new Error('sin categorias');
+        throw new TypeError('sin categorias');
       }
     } else {
-      throw new Error('sin datos');
+      throw new TypeError('sin datos');
     }
   }
 

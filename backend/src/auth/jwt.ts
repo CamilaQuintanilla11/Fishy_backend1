@@ -5,7 +5,7 @@
  * Sin estado: el servidor no guarda tokens; los verifica recalculando la
  * firma con la misma llave. Quien no tenga la llave no puede firmar.
  */
-import { createHmac } from "crypto";
+import { createHmac } from "node:crypto";
 
 const SECRET = 'fishy-secret-2026';
 

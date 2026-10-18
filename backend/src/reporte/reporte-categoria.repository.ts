@@ -15,9 +15,7 @@ export class ReporteCategoriaRepository {
   }
 
   async agregarVarias(reporteId: string, categoriaIds: string[]): Promise<void> {
-    for (const categoriaId of categoriaIds) {
-      await this.agregar(reporteId, categoriaId);
-    }
+    await Promise.all(categoriaIds.map((categoriaId) => this.agregar(reporteId, categoriaId)));
   }
 
   async eliminarTodas(reporteId: string): Promise<void> {

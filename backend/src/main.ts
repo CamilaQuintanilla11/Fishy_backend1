@@ -35,7 +35,7 @@ async function bootstrap() {
 function lanUrls(): string[] {
   return Object.values(networkInterfaces())
     .flat()
-    .filter((i => i && i.family === 'IPv4' && !i.internal))
+    .filter((i) => i?.family === 'IPv4' && !i.internal)
     .map((i) => 'http://' + i!.address + ':3000');
 }
 bootstrap();
