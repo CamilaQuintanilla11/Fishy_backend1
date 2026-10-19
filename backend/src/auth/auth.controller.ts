@@ -37,7 +37,7 @@ export class AuthController {
     @ApiOperation({ summary: 'Access token nuevo a partir del refresh token' })
     @ApiResponse({ status: 200, description: 'Token refrescado exitosamente', schema: { example: { accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' } } })
     @ApiResponse({ status: 401, description: 'Refresh token inválido o expirado' })
-    async refresh(@Body() dto: RefreshDto) {
+    refresh(@Body() dto: RefreshDto) {
         return this.service.refresh(dto);
     }
     @Get('me')

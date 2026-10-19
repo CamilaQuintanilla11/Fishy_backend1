@@ -38,4 +38,7 @@ function lanUrls(): string[] {
     .filter((i) => i?.family === 'IPv4' && !i.internal)
     .map((i) => 'http://' + i!.address + ':3000');
 }
-bootstrap();
+bootstrap().catch((error: unknown) => {
+  console.error('Error al iniciar la aplicación:', error);
+  process.exitCode = 1;
+});
