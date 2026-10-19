@@ -27,15 +27,22 @@ export class LecturaRepository {
     return rows.map(toConProgreso);
   }
 
-  async findByIdConProgreso(usuarioId: string, id: string): Promise<LecturaConProgreso | undefined> {
-    const [rows] = await this.pool.query<RowDataPacket[]>(
-      `SELECT ${COLUMNS}, p.completada, p.fecha_completado
-       FROM lecturas l
-       LEFT JOIN progreso_lecturas p ON p.lectura_id = l.id AND p.usuario_id = '${usuarioId}'
-       WHERE l.id = '${id}'`,
-    );
-    return rows[0] && toConProgreso(rows[0]);
-  }
+  
+async findByIdConProgreso(
+  usuarioId: string,
+  id: string,
+): Promise<LecturaConProgreso | undefined> {
+  const [rows] = await this.pool.query<RowDataPacket[]>(
+    `SELECT ${COLUMNS}, p.completada, p.fecha_completado
+     FROM lecturas l
+     LEFT JOIN progreso_lecturas p
+       ON p.lectura_id = l.id AND p.usuario_id = ?
+     WHERE l.id = ?`,
+    [usuarioId, id],
+  );
+
+  return rows[0] ? toConProgreso(rows[0]) : undefined;
+}
 
   async findById(id: string): Promise<Lectura | undefined> {
     const [rows] = await this.pool.query<RowDataPacket[]>(

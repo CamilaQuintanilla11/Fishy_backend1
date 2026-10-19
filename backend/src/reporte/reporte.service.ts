@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Inject, forwardRef, InternalServerErrorException } from '@nestjs/common';
 import { ReporteRepository } from './reporte.repository';
 import { ReporteResponseDto } from './dto/reporte-response.dto';
 import { CreateReporteDto } from './dto/create-reporte.dto';
@@ -63,14 +63,12 @@ export class ReporteService {
 
     const estadoInicial = await this.estadoRepository.findByNombre(ESTADO_INICIAL);
     if (!estadoInicial) {
-      throw new Error(`No existe el estado "${ESTADO_INICIAL}"`);
+      throw new InternalServerErrorException(`No existe el estado "${ESTADO_INICIAL}"`);
     }
-    for (const categoriaId of dto.categorias) {
-      const categoria = await Promise.all(dto.categorias.map((categoriaId) => this.categoriaRepository.findById(categoriaId)));
+    const categorias = await Promise.all(dto.categorias.map((categoriaId) => this.categoriaRepository.findById(categoriaId),),);
 
-      if (!categoria){
-        throw new NotFoundException('la categoría no existe');
-      }
+    if (categorias.some((categoria) => !categoria)) {
+      throw new NotFoundException('La categoría no existe');
     }
 
     const reporte = await this.repository.save({

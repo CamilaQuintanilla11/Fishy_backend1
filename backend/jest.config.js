@@ -2,7 +2,7 @@
 module.exports = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
-  testRegex: '.*\\.spec\\.ts$',
+  testRegex: String.raw`.*\.spec\.ts$`,
   moduleFileExtensions: ['ts', 'js', 'json'],
   rootDir: '.',
   moduleNameMapper: {
