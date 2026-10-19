@@ -41,8 +41,8 @@ export class CategoriaRepository {
     }
 
     async update(id: string, changes: Partial<Categoria>): Promise<Categoria | undefined> {
-        const allowedColumns = ['nombre'];
-        const entries = Object.entries(changes).filter(([column, value]) => allowedColumns.includes(column) && value !== undefined);
+        const allowedColumns = new Set(['nombre']);
+        const entries = Object.entries(changes).filter(([column, value]) => allowedColumns.has(column) && value !== undefined);
         if (entries.length === 0) return this.findById(id);
 
         const sets = entries.map(([column]) => `${column} = ?`).join(', ');

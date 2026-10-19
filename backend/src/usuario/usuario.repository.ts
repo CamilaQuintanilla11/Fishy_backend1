@@ -44,8 +44,8 @@ export class UsuarioRepository {
         return (await this.findById(id))!;
     }
     async update(id: string, changes: Partial<Usuario>): Promise<Usuario | undefined> {
-        const allowedColumns = ['nombre', 'correo', 'nombreUsuario', 'contrasenaHash'];
-        const entries = Object.entries(changes).filter(([column, value]) => allowedColumns.includes(column) && value !== undefined);
+        const allowedColumns = new Set(['nombre', 'correo', 'nombreUsuario', 'contrasenaHash']);
+        const entries = Object.entries(changes).filter(([column, value]) => allowedColumns.has(column) && value !== undefined);
         if (entries.length === 0) return this.findById(id);
 
         const sets = entries.map(([column]) => `${column} = ?`).join(', ');

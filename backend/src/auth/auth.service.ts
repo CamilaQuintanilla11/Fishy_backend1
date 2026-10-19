@@ -74,7 +74,7 @@ export class AuthService {
 
   refresh(dto: RefreshDto): { accessToken: string } {
     const payload = verify(dto.refreshToken);
-    if (!payload || payload.type !== 'refresh') {
+    if (payload?.type !== 'refresh') {
       throw new UnauthorizedException('Refresh token invalido');
     }
     const accessToken = sign(
